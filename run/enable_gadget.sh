@@ -30,7 +30,7 @@ mkdir -p "$gadget_root/configs/$cfg.1"
 echo 0x1d6b > "$gadget_root/idVendor"  # Linux Foundation
 echo 0x0104 > "$gadget_root/idProduct" # Composite Gadget
 echo 0x0100 > "$gadget_root/bcdDevice" # v1.0.0
-echo 0x0200 > "$gadget_root/bcdUSB"    # USB 2.0
+echo 0x0300 > "$gadget_root/bcdUSB"    # USB 3.0 for radxa_cubie_a7z
 mkdir -p "$gadget_root/strings/$lang"
 mkdir -p "$gadget_root/configs/$cfg.1/strings/$lang"
 echo "TeslaUSB-$(sha256sum < /etc/machine-id | awk '{print $1}')" > "$gadget_root/strings/$lang/serialnumber"
@@ -89,6 +89,11 @@ then
   echo "TeslaUSB BOOMBOX $(du -h /backingfiles/boombox_disk.bin | awk '{print $1}')" > "$gadget_root/functions/mass_storage.0/lun.${lun}/inquiry_string"
   ((++lun))
 fi
+
+# Enable nofua on all LUNs (testing for faster writing speed)
+for l in "$gadget_root/functions/mass_storage.0"/lun.*; do
+  [ -f "$l/nofua" ] && echo 1 > "$l/nofua" || true
+done
 
 ln -sf "$gadget_root/functions/mass_storage.0" "$gadget_root/configs/$cfg.1"
 

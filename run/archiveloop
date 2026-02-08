@@ -7,7 +7,8 @@ then
 fi
 
 # Unload the module that was loaded by cmdline.txt
-modprobe -r g_ether
+# g_ether not available on radxa_cubie_a7z, so commenting out.
+# modprobe -r g_ether
 
 export LOG_FILE=/mutable/archiveloop.log
 
