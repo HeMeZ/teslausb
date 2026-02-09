@@ -175,6 +175,11 @@ function isRadxaZero {
 }
 export -f isRadxaZero
 
+function isRadxaCubieA7Z {
+  grep -q "CUBIE-A7Z" /sys/firmware/devicetree/base/board
+}
+export -f isRadxaCubieA7Z
+
 STATUSLED=/tmp/fakeled
 
 while read -r led
