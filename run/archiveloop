@@ -631,7 +631,12 @@ function archive_teslacam_clips () {
   then
     if [ "$archive_success" = "true" ]
     then
-      clean_cam_mount freespace
+      if [[ "$total_count" -gt 0 ]]
+      then
+        clean_cam_mount freespace
+      else
+        log "No new clips archived; skipping cleaning step to avoid USB disconnect/reconnect."
+      fi
     else
       log "Skipping cleaning step after archive error"
     fi
@@ -735,8 +740,12 @@ function snapshotloop {
   while true
   do
     sleep "${SNAPSHOT_INTERVAL:-3480}"
-    /root/bin/waitforidle || true
-    /root/bin/make_snapshot.sh
+    if /root/bin/waitforidle
+    then
+      /root/bin/make_snapshot.sh
+    else
+      log "snapshotloop: still writing, skipping snapshot"
+    fi
   done
 }
 

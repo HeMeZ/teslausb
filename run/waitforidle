@@ -8,6 +8,11 @@ COUNT=0
 
 BURSTSIZE=0
 
+SAW_WRITE=0
+
+DEV=$(findmnt -no SOURCE /backingfiles | sed 's|/dev/||')
+[ -n "$DEV" ] || { log "couldn't determine /backingfiles block device"; exit 1; }
+
 log "waiting up to 90 seconds for idle interval"
 for _ in {1..90}
 do
@@ -18,7 +23,8 @@ do
     log "mass storage process not active, OK to write"
     exit 0
   fi
-  WRITTEN=$(grep ^write_bytes "/proc/$PROC/io" | awk '{print $2}')
+  # sectors_written -> bytes
+  WRITTEN=$(( $(awk '{print $7}' "/sys/class/block/$DEV/stat") * 512 ))
   if (( PREVWRITTEN == -1 ))
   then
     # we don't have a previous measurement yet
@@ -33,6 +39,7 @@ do
       if (( DELTA > 500000 ))
       then
         log "write in progress"
+        SAW_WRITE=1
         STATE=WRITING
         BURSTSIZE=$DELTA
       else
@@ -78,6 +85,13 @@ do
   esac
 done
 
-log "couldn't determine idle interval"
+# Timeout behavior tweak:
+# If we never observed a write burst, assume it's safe (e.g. sentry disabled).
+if (( SAW_WRITE == 0 )); then
+  log "no write burst seen during interval, OK to write"
+  exit 0
+fi
+
+log "couldn't determine idle interval after 90 seconds, not safe to write"
 exit 1
 
