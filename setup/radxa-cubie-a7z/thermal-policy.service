@@ -1,0 +1,10 @@
+[Unit]
+Description=Set thermal policy to step_wise when using fan
+After=multi-user.target
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh -c 'echo step_wise > /sys/class/thermal/thermal_zone0/policy; echo step_wise > /sys/class/thermal/thermal_zone1/policy'
+
+[Install]
+WantedBy=multi-user.target

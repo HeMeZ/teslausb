@@ -832,3 +832,11 @@ WantedBy=backingfiles.mount
 EOF
 
 systemctl enable teslausb.service
+
+# Copy and enable disable-big-cores service
+copy_script setup/radxa-cubie-a7z/disable-big-cores.service /lib/systemd/system/
+systemctl enable disable-big-cores.service
+
+# Copy and enable thermal-policy service
+copy_script setup/radxa-cubie-a7z/thermal-policy.service /lib/systemd/system/
+systemctl enable thermal-policy.service

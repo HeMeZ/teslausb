@@ -1,0 +1,25 @@
+[Unit]
+Description=Low-power profile: 4x A55, cap 780MHz, disable A76, waits 60s to keep boot fast
+After=multi-user.target
+
+[Service]
+Type=oneshot
+ExecStartPre=/bin/sleep 60
+ExecStart=/bin/sh -c '\
+  # CPU governor + cap for little cluster (policy0 = CPUs 0-5 on your board) \
+  [ -d /sys/devices/system/cpu/cpufreq/policy0 ] && echo conservative > /sys/devices/system/cpu/cpufreq/policy0/scaling_governor; \
+  [ -d /sys/devices/system/cpu/cpufreq/policy0 ] && echo 780000 > /sys/devices/system/cpu/cpufreq/policy0/scaling_max_freq; \
+  \
+  # If big-cluster policy exists, set governor too (even if cores are off) \
+  [ -d /sys/devices/system/cpu/cpufreq/policy6 ] && echo conservative > /sys/devices/system/cpu/cpufreq/policy6/scaling_governor 2>/dev/null || true; \
+  [ -d /sys/devices/system/cpu/cpufreq/policy6 ] && echo 780000 > /sys/devices/system/cpu/cpufreq/policy6/scaling_max_freq; \
+  \
+  # Disable extra little cores (keep CPU0-CPU3 online) \
+  for c in 4 5; do [ -e /sys/devices/system/cpu/cpu$c/online ] && echo 0 > /sys/devices/system/cpu/cpu$c/online; done; \
+  \
+  # Disable big cores \
+  for c in 6 7; do [ -e /sys/devices/system/cpu/cpu$c/online ] && echo 0 > /sys/devices/system/cpu/cpu$c/online; done \
+'
+
+[Install]
+WantedBy=multi-user.target
