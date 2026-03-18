@@ -272,6 +272,7 @@ function trim_free_space() {
     if fstrim "$mount_point" >> "$LOG_FILE" 2>&1
     then
       log "Trim complete, image now has $(filefrag "$image" | awk '{print $2}') extents"
+      log "Trimming free space in /backingfiles: $(fstrim -v /backingfiles 2>&1 | tr '\n' ' ')"
     else
       log "Trimming free space in $mount_point failed."
     fi
