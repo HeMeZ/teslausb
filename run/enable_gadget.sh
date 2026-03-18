@@ -31,6 +31,7 @@ echo 0x1d6b > "$gadget_root/idVendor"  # Linux Foundation
 echo 0x0104 > "$gadget_root/idProduct" # Composite Gadget
 echo 0x0100 > "$gadget_root/bcdDevice" # v1.0.0
 echo 0x0300 > "$gadget_root/bcdUSB"    # USB 3.0 for radxa_cubie_a7z
+echo 0x40 > "$gadget_root/bMaxPacketSize0"  #set default value explicity just in case
 mkdir -p "$gadget_root/strings/$lang"
 mkdir -p "$gadget_root/configs/$cfg.1/strings/$lang"
 echo "TeslaUSB-$(sha256sum < /etc/machine-id | awk '{print $1}')" > "$gadget_root/strings/$lang/serialnumber"
@@ -50,6 +51,10 @@ then
 elif isPi2
 then
   echo 200 > "$gadget_root/configs/$cfg.1/MaxPower"
+elif isRadxaCubieA7Z
+then
+  # MaxPower is in 2mA units -> 250 == 500mA
+  echo 250 > "$gadget_root/configs/$cfg.1/MaxPower"
 else
   echo 100 > "$gadget_root/configs/$cfg.1/MaxPower"
 fi
