@@ -88,11 +88,13 @@ case "${SENTRY_CASE}" in
     elif [[ -n "${TESLA_BLE_VIN:+x}" ]]
     then
       # Use Tesla BLE API to disable Sentry Mode
-      if /root/bin/tesla-control -ble -key-file /root/.ble/key_private.pem -vin "${TESLA_BLE_VIN^^}" sentry-mode off
+      if (r=3
+          until /root/bin/tesla-control -ble -key-file /root/.ble/key_private.pem -vin "${TESLA_BLE_VIN^^}" keep-accessory-power off
+            do ((--r))||exit 1; sleep 5; done)
       then
-        log "Tesla BLE: Command sent to disable Sentry Mode."
+        log "Tesla BLE: Command sent to disable keep accessory power."
       else
-        log "Tesla BLE: Failed to set Sentry Mode."
+        log "Tesla BLE: Failed to set keep accessory power."
       fi
 
     elif [[ -n "${KEEP_AWAKE_WEBHOOK_URL:+x}" ]]
